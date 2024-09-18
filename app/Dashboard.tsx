@@ -1,9 +1,42 @@
 "use client";
 
 import { useState } from "react";
+import { getRpcServerUrl } from "@/utils/env";
+import jsonRpc, { jsonRpc_XXX } from "@/utils/jsonRpc";
+
+const RPC_SERVER_URL = getRpcServerUrl();
 
 export default function Dashboard() {
   const [resolution, setResolution] = useState("");
+  const [rpc, setRpc] = useState<Awaited<ReturnType<typeof jsonRpc>> | null>(null);
+
+  const connectRpc = async () => {
+    try {
+      console.log(rpc);
+
+      if (rpc) {
+        rpc.close();
+        setRpc(null);
+        console.log("RPC connection closed.");
+        return;
+      }
+
+      const response = await jsonRpc_XXX({
+        onnotification: (msg) => console.log("Received notification:", JSON.stringify(msg)),
+      });
+
+      if (!response) {
+        console.error("Failed to establish RPC connection.");
+        setRpc(null);
+        return;
+      }
+
+      console.log("RPC connection established:", response);
+      setRpc(response);
+    } catch (err) {
+      console.log("err :>> ", err);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +50,18 @@ export default function Dashboard() {
   return (
     <>
       <div className="mt-5">
+        <div className="p-1 bg-red-500 rounded my-5"></div>
+
+        <div>
+          <h1 className="text-lg font-bold mb-2">JSON-RPC over Websocket demo</h1>
+          <input defaultValue={RPC_SERVER_URL} className="w-80 p-3 rounded mr-3" readOnly />
+          <button id="connect" className="p-2 ring-1 rounded" onClick={connectRpc}>
+            connect
+          </button>
+        </div>
+
+        <div className="p-1 bg-red-500 rounded my-5"></div>
+
         <form onSubmit={handleSubmit}>
           <label htmlFor="resolution">Resolution:</label>
           <select
@@ -42,6 +87,8 @@ export default function Dashboard() {
             Submit
           </button>
         </form>
+
+        <div className="p-1 bg-red-500 rounded my-5"></div>
       </div>
     </>
   );
