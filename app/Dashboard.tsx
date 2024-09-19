@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { getRpcServerUrl } from "@/utils/env";
-import jsonRpc, { jsonRpc_XXX } from "@/utils/jsonRpc";
+import jsonRpc from "@/utils/jsonRpc";
 
 const RPC_SERVER_URL = getRpcServerUrl();
 
 export default function Dashboard() {
   const [resolution, setResolution] = useState("");
-  const [rpc, setRpc] = useState<Awaited<ReturnType<typeof jsonRpc_XXX>> | null>(null);
+  const [rpc, setRpc] = useState<Awaited<ReturnType<typeof jsonRpc>> | null>(null);
 
   const connectRpc = async () => {
     try {
@@ -21,7 +21,7 @@ export default function Dashboard() {
         return;
       }
 
-      const response = await jsonRpc_XXX({
+      const response = await jsonRpc({
         onnotification: (msg) => console.log("Received notification:", JSON.stringify(msg)),
       });
 
@@ -38,12 +38,34 @@ export default function Dashboard() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const rpc_sum = (a: number, b: number) => {
+    try {
+      if (!rpc) return;
+      rpc.call("sum", [a, b]);
+    } catch (err) {
+      console.log("err :>> ", err);
+    }
+  };
 
-    if (resolution) {
-      const [width, height] = resolution.split("x");
-      console.log(`Width: ${width}, Height: ${height}`);
+  const rpc_mul = (a: number, b: number) => {
+    try {
+      if (!rpc) return;
+      rpc.call("mul", [a, b]);
+    } catch (err) {
+      console.log("err :>> ", err);
+    }
+  };
+
+  const rpc_resolution = (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      if (resolution) {
+        const [width, height] = resolution.split("x");
+        if (!rpc) return;
+        rpc.call("resolution", [height, width]);
+      }
+    } catch (err) {
+      console.log("err :>> ", err);
     }
   };
 
@@ -63,41 +85,17 @@ export default function Dashboard() {
         <div className="p-1 bg-red-500 rounded my-5"></div>
 
         <div>
-          <button
-            className="bg-green-300 p-2 me-3 rounded"
-            onClick={() => {
-              try {
-                if (!rpc) {
-                  return;
-                }
-                rpc.call("sum", [4, 2]);
-              } catch (err) {
-                console.log("err :>> ", err);
-              }
-            }}
-          >
+          <button className="bg-green-300 p-2 me-3 rounded" onClick={() => rpc_sum(4, 2)}>
             Add 4 & 2
           </button>
-          <button
-            className="bg-green-300 p-2 me-3 rounded"
-            onClick={() => {
-              try {
-                if (!rpc) {
-                  return;
-                }
-                rpc.call("mul", [3, 5]);
-              } catch (err) {
-                console.log("err :>> ", err);
-              }
-            }}
-          >
+          <button className="bg-green-300 p-2 me-3 rounded" onClick={() => rpc_mul(3, 5)}>
             Mul 3 & 5
           </button>
         </div>
 
         <div className="p-1 bg-red-500 rounded my-5"></div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={rpc_resolution}>
           <label htmlFor="resolution">Resolution:</label>
           <select
             id="resolution"
@@ -108,10 +106,8 @@ export default function Dashboard() {
             <option value="" disabled>
               Select a resolution
             </option>
-            <option value="1920x1080">1920x1080</option>
-            <option value="1366x768">1366x768</option>
             <option value="1280x720">1280x720</option>
-            <option value="1024x768">1024x768</option>
+            <option value="640x480">640x480</option>
           </select>
 
           <button
