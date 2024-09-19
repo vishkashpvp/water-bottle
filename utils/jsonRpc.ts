@@ -80,7 +80,7 @@ export function jsonRpc_XXX({ onopen, onclose, onnotification }: JsonRpcOptions)
 
   return new Promise<{
     close: () => void;
-    call: (method: typeof Function, params: any) => Promise<unknown>;
+    call: (method: string, params: any) => Promise<unknown>;
   }>((resolve, reject) => {
     ws.onopen = () => {
       console.log("WebSocket connection established.");
@@ -88,7 +88,7 @@ export function jsonRpc_XXX({ onopen, onclose, onnotification }: JsonRpcOptions)
 
       resolve({
         close: () => ws.close(),
-        call: (method: typeof Function, params: any) => {
+        call: (method: string, params: any) => {
           const id = rpcid++;
           const request = { id, method, params };
           ws.send(JSON.stringify(request));

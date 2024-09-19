@@ -8,7 +8,7 @@ const RPC_SERVER_URL = getRpcServerUrl();
 
 export default function Dashboard() {
   const [resolution, setResolution] = useState("");
-  const [rpc, setRpc] = useState<Awaited<ReturnType<typeof jsonRpc>> | null>(null);
+  const [rpc, setRpc] = useState<Awaited<ReturnType<typeof jsonRpc_XXX>> | null>(null);
 
   const connectRpc = async () => {
     try {
@@ -57,6 +57,41 @@ export default function Dashboard() {
           <input defaultValue={RPC_SERVER_URL} className="w-80 p-3 rounded mr-3" readOnly />
           <button id="connect" className="p-2 ring-1 rounded" onClick={connectRpc}>
             connect
+          </button>
+        </div>
+
+        <div className="p-1 bg-red-500 rounded my-5"></div>
+
+        <div>
+          <button
+            className="bg-green-300 p-2 me-3 rounded"
+            onClick={() => {
+              try {
+                if (!rpc) {
+                  return;
+                }
+                rpc.call("sum", [4, 2]);
+              } catch (err) {
+                console.log("err :>> ", err);
+              }
+            }}
+          >
+            Add 4 & 2
+          </button>
+          <button
+            className="bg-green-300 p-2 me-3 rounded"
+            onClick={() => {
+              try {
+                if (!rpc) {
+                  return;
+                }
+                rpc.call("mul", [3, 5]);
+              } catch (err) {
+                console.log("err :>> ", err);
+              }
+            }}
+          >
+            Mul 3 & 5
           </button>
         </div>
 
